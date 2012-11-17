@@ -1,0 +1,60 @@
+ul {
+	-webkit-padding-start: 0px;
+}
+
+ul li {
+	list-style: none;
+}
+
+.alignRight {
+	text-align: right;
+}
+
+.alignLeft {
+	text-align: left;
+}
+
+input:invalid {
+	border-color: red;
+}
+
+.content-secondary {
+	display:none;
+}
+
+@media screen and (min-width: 650px) {
+	ul {
+		-webkit-padding-start: 40px;
+	}
+
+	.content-secondary {
+		display: block;
+		float: left;
+		width: 45%;
+	}
+	
+	.content-primary {
+		float: left;
+		width: 45%;
+	}
+}
+
+@media screen and (min-width: 750px) {
+	.content-secondary {
+		width: 34%;
+	}
+	
+	.content-primary {
+		width: 56%;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.content-secondary {
+		width: 30%;
+	}
+	
+	.content-primary {
+		width: 50%;
+	}
+}

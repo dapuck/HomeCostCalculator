@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html manifest="cache.manifest">
+<head>
+	<title>Home Cost Calculator</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.2.0.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+	<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+	<script type="text/javascript" src="js/serialize.js"></script>
+	<script type="text/javascript" src="js/modernizr-latest.js"></script>
+	<script type="text/javascript" src="js/mustache.js"></script>
+	<script type="text/javascript" src="js/json3.min.js"></script>
+	<script type="text/javascript" src="js/HomeCostCalculator.js"></script>
+	<script type="text/javascript">
+		((typeof Zepto != 'undefined')? Zepto : jQuery)(function($) {
+			HomeCostCalculator.initialize();
+		});
+	</script>
+	<script type="text/html" id="util_template">
+		<tr id="util_input_{{num}}">
+			<td><input type="text" id="name_{{num}}" name="name_{{num}}" recnum="{{num}}" value="{{name}}" /></td>
+			<td><input type="text" id="cost_{{num}}" name="cost_{{num}}" recnum="{{num}}" value="{{value}}" /></td>
+			<td><input type="button" class="utilRemove" recnum="{{num}}" value="X" /></td>
+		</tr>
+	</script>
+</head>
+<body>
+	<div data-role="page" id="menu">
+		<div data-role="content">
+			<ul data-role="listview">
+				<li><a href="#monthly_pmts">Monthly Payment Calculator</a></li>
+				<li><a href="#max_loan">Max Loan Calculator</a></li>
+				<li><a href="#table_gen">Table Generator</a></li>
+				<li><a href="#config">Settings</a></li>
+			</ul>
+		</div>
+	</div>
+	<div data-role="page" id="monthly_pmts" style="">
+		<div data-role="content">
+			<ul data-role="listview" class="content-secondary">
+				<li><a href="#monthly_pmts">Monthly Payment Calculator</a></li>
+				<li><a href="#max_loan">Max Loan Calculator</a></li>
+				<li><a href="#table_gen">Table Generator</a></li>
+				<li><a href="#config">Settings</a></li>
+			</ul>
+			<form id="monthly_pmts_calc" class="content-primary">
+				<ul>
+					<li>
+						<label for="homePrice">Home Price:</label>
+						<input id="homePrice" name="homePrice" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
+					</li>
+					<li>
+						<label for="downPmt">Down Payment:</label>
+						<input id="downPmt" name="downPmt" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
+					</li>
+					<li>
+						<span>Loan Value:</span>
+						<span id="loanVal" class="calVal"></span>
+					</li>
+					<li>
+						<label for="loanTerm">Term:</label>
+						<select id="loanTerm" name="loanTerm">
+							<option value="30">30 years</option>
+							<option value="15">15 years</option>
+						</select>
+					</li>
+					<li>
+						<label for="apr">APR:</label>
+						<input id="apr" name="apr" type="text" pattern="^\d*\.?\d+%?$" />
+					</li>
+					<li>
+						<span>Monthly Loan Payment:</span>
+						<span id="monthlyLoanPmt" class="calVal"></span></label>
+					</li>
+					<li>
+						<label for="hoa">HOA:</label>
+						<input id="hoa" name="hoa" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
+					</li>
+					<li>
+						<span>Utilities:</span>
+						<span id="utilCost" class="calVal"></span>
+					</li>
+					<li>
+						<span>Est. Tax:</span>
+						<span id="estTax" class="calVal"></span>
+						<select id="community" name="community">
+							<option value="">-Select a Community-</option>
+						</select>
+					</li>
+					<li>
+						<span>Total Monthly Payments:</span>
+						<span id="totalMonthlyPmt" class="calVal"></span>
+					</li>
+				</ul>
+			</form>
+		</div>
+		<div data-role="footer">
+			<a href="#menu">Menu</a>
+		</div>
+	</div>
+	<div data-role="page" id="max_loan" style="">
+		<div data-role="content">
+			<ul data-role="listview" class="content-secondary">
+				<li><a href="#monthly_pmts">Monthly Payment Calculator</a></li>
+				<li><a href="#max_loan">Max Loan Calculator</a></li>
+				<li><a href="#table_gen">Table Generator</a></li>
+				<li><a href="#config">Settings</a></li>
+			</ul>
+			<form id="max_loan_calc" class="content-primary">
+				<ul>
+					<li>
+						<label for="income">Income</label>
+						<input id="income" name="income" type="text" pattern="\d*\.?\d+" />
+						<select id="incomePer" name="incomePer">
+							<option value="year">per Year</option>
+							<option value="month">per Month</option>
+							<option value="week">per Week</option>
+						</select>
+					</li>
+					<li>
+						<label for="debt">Monthly Debt</label>
+						<input id="debt" name="debt" type="text" pattern="\d*\.?\d+" />
+					</li>
+					<li>
+						<label for="d2i">Debt to income ratio</label>
+						<input id="d2i" name="d2i" type="text" pattern="\d*\.?\d+" />
+					</li>
+					<li>
+						<span>Max Payment for Income</span>
+						<span id="maxPmt"></span>
+					</li>
+					<li>
+						<label for="loanTerm">Term:</label>
+						<select id="loanTerm" name="loanTerm">
+							<option value="30">30 years</option>
+							<option value="15">15 years</option>
+						</select>
+					</li>
+					<li>
+						<label for="estapr">Est. APR</label>
+						<input id="estapr" name="estapr" type="text" pattern="\d*\.?\d+" />
+					</li>
+					<li>
+						<span>Max Loan Amount</span>
+						<span id="maxLoanAmt"></span>
+					</li>
+				</ul>
+			</form>
+		</div>
+		<div data-role="footer">
+			<a href="#menu">Menu</a>
+		</div>
+	</div>
+	<div data-role="page" id="table_gen" style="">
+		<div data-role="content">
+			<ul data-role="listview" class="content-secondary">
+				<li><a href="#monthly_pmts">Monthly Payment Calculator</a></li>
+				<li><a href="#max_loan">Max Loan Calculator</a></li>
+				<li><a href="#table_gen">Table Generator</a></li>
+				<li><a href="#config">Settings</a></li>
+			</ul>
+		</div>
+		<div data-role="footer">
+			<a href="#menu">Menu</a>
+		</div>
+	</div>
+	<div data-role="page" id="config" style="">
+		<div data-role="content">
+			<ul data-role="listview" class="content-secondary">
+				<li><a href="#monthly_pmts">Monthly Payment Calculator</a></li>
+				<li><a href="#max_loan">Max Loan Calculator</a></li>
+				<li><a href="#table_gen">Table Generator</a></li>
+				<li><a href="#config">Settings</a></li>
+			</ul>
+			<div class="content-primary" style="padding-left: 40px;">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Cost</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="util_inputs">
+					</tbody>
+				</table>
+				<input id="add_util" type="button" value="Add Utility" />
+			</div>
+		</div>
+		<div data-role="footer">
+			<a href="#menu">Menu</a>
+		</div>
+	</div>
+</body>
+</html>
