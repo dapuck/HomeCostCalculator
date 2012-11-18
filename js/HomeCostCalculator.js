@@ -144,7 +144,13 @@ window.HomeCostCalculator = (function($) {
 	}
 
 	function _formatAsCurrency(value) {
-		return "$" + value.toFixed(2);
+		value = value.toFixed(2);
+		var arr = value.split('.');
+		var whole = arr[0].substr(0,(arr[0].length % 3)), dec = arr[1];
+		for(var i = (arr[0].length % 3); i < arr[0].length; i = i + 3) {
+			whole += ((i>0)?",":"") + arr[0].substr(i, 3);
+		}
+		return "$" + whole + "." + dec;
 	}
 
 	function PMT (rate, nper, loan) {
