@@ -6,6 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+
 	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.2.0.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css"/>
 
@@ -26,6 +28,36 @@
 			<td><input type="text" id="name_{{num}}" name="name_{{num}}" recnum="{{num}}" value="{{name}}" /></td>
 			<td><input type="text" id="cost_{{num}}" name="cost_{{num}}" recnum="{{num}}" value="{{value}}" /></td>
 			<td><input type="button" class="utilRemove" recnum="{{num}}" value="X" /></td>
+		</tr>
+	</script>
+	<script type="text/html" id="table_template">
+		<tr>
+			<td><span>Payment:</span></td>
+			<td><span>{{payment}}</span></td>
+		</tr>
+		<tr>
+			<td><span>Loan Ammount:</span></td>
+			<td><span>{{loanamt}}</span></td>
+		</tr>
+		<tr>
+			<td><span>20% Down:</span></td>
+			<td><span>{{down}}</span></td>
+		</tr>
+		<tr>
+			<td><span>Home Price:</span></td>
+			<td><span>{{homeprice}}</span></td>
+		</tr>
+		<tr>
+			<td><span>Anual Taxes:</span></td>
+			<td><span>{{tax}}</span></td>
+		</tr>
+		<tr>
+			<td><span>Utilities:</span></td>
+			<td><span>{{util}}</span></td>
+		</tr>
+		<tr>
+			<td style="border-bottom: 1px solid black;"><span>Total Monthly:</span></td>
+			<td style="border-bottom: 1px solid black;"><span>{{totalmonthly}}</span></td>
 		</tr>
 	</script>
 </head>
@@ -118,7 +150,8 @@
 				<ul>
 					<li>
 						<label for="income">Income</label>
-						<input id="income" name="income" type="text" pattern="\d*\.?\d+" />
+						<input id="income" name="income" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
 						<select id="incomePer" name="incomePer">
 							<option value="year">per Year</option>
 							<option value="month">per Month</option>
@@ -127,7 +160,8 @@
 					</li>
 					<li>
 						<label for="debt">Monthly Debt</label>
-						<input id="debt" name="debt" type="text" pattern="\d*\.?\d+" />
+						<input id="debt" name="debt" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
 					</li>
 					<li>
 						<label for="d2i">Debt to income ratio</label>
@@ -167,6 +201,65 @@
 				<li><a href="#table_gen">Table Generator</a></li>
 				<li><a href="#config">Settings</a></li>
 			</ul>
+			<form id="table_form" class="content-primary">
+				<ul>
+					<li>
+						<label for="income">Income</label>
+						<input id="income" name="income" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
+						<select id="incomePer" name="incomePer">
+							<option value="year">per Year</option>
+							<option value="month">per Month</option>
+							<option value="week">per Week</option>
+						</select>
+					</li>
+					<li>
+						<label for="debt">Monthly Debt</label>
+						<input id="debt" name="debt" type="text" 
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$" />
+					</li>
+					<li>
+						<label for="d2i">Debt to income ratio</label>
+						<input id="d2i" name="d2i" type="text" pattern="\d*\.?\d+" />
+					</li>
+					<li>
+						<label for="loanTerm">Term:</label>
+						<select id="loanTerm" name="loanTerm">
+							<option value="30">30 years</option>
+							<option value="15">15 years</option>
+						</select>
+					</li>
+					<li>
+						<label for="estapr">Est. APR</label>
+						<input id="estapr" name="estapr" type="text" pattern="\d*\.?\d+" />
+					</li>
+					<li>
+						<span>Utilities:</span>
+						<span id="utilCost" class="calVal"></span>
+					</li>
+					<li>
+						<select id="community" name="community">
+							<option value="">-Select a Community-</option>
+						</select>
+					</li>
+					<li>
+						<span>Payment Range:</span> <br />
+						<label>Start</label>
+						<input id="pmtStart" name="pmtStart" type="text" style="width: auto; display: inline;"
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$"/><br />
+						<label>Stop</label>
+						<input id="pmtStop" name="pmtStop" type="text" style="width: auto; display: inline;"
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$"/><br />
+						<label>Step</label>
+						<input id="pmtStep" name="pmtStep" type="text" style="width: auto; display: inline;" value="$100"
+							pattern="^\$?([1-9]{1}[0-9]{0,2}(\,[0-9]{3})*(\.[0-9]{0,2})?|[1-9]{1}[0-9]{0,}(\.[0-9]{0,2})?|0(\.[0-9]{0,2})?|(\.[0-9]{1,2})?)$"/>
+					</li>
+					<li>
+						<input id="genTable" type="button" value="Generate Table" />
+				</ul>
+			</form>
+			<table id="table_display" class="content-primary" style="display: none; margin-left: 20px;">
+			</table>
 		</div>
 		<div data-role="footer">
 			<a href="#menu">Menu</a>

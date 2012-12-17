@@ -1,4 +1,4 @@
-AddType text/cache-manifest .manifest
+#AddType text/cache-manifest .manifest
 
 ExpiresActive On
 ExpiresDefault "access"

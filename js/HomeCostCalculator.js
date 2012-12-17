@@ -7,20 +7,26 @@ window.HomeCostCalculator = (function($) {
 	function _init() {
 		initializeMonthlyPmtsCalc();
 		initializeMaxLoanCalc();
+		initializeTableGenerator();
 		initializeSettings();
+
+		$(document).on('pagebeforechange', function(event,data) {
+			if(['monthly_pmts', 'table_gen'].indexOf(data.toPage[0].id) > -1) {
+				$('span#utilCost').text(_formatAsCurrency(HomeCostCalculatorData.getEstUtilTotal()));
+			}
+			if(['table_gen'].indexOf(data.toPage[0].id) > -1) {
+				$('form#table_form').show();
+				$("table#table_display").hide();
+			}
+			HomeCostCalculatorData.saveData();
+		});
 	}
 
 	function initializeMonthlyPmtsCalc() {
 		$('form#monthly_pmts_calc input').on('blur', updateMonthlyPmtsTotals);
 		$('form#monthly_pmts_calc select').on('change', updateMonthlyPmtsTotals);
 		populateCommunities();
-		$('#utilCost').text(_formatAsCurrency(HomeCostCalculatorData.getEstUtilTotal()));
-		$(document).on('pagebeforechange', function(event,data) {
-			if(data.toPage[0].id == 'monthly_pmts') {
-				$('#utilCost').text(_formatAsCurrency(HomeCostCalculatorData.getEstUtilTotal()));
-			}
-			HomeCostCalculatorData.saveData();
-		})
+		$('span#utilCost').text(_formatAsCurrency(HomeCostCalculatorData.getEstUtilTotal()));
 	}
 	
 	function updateMonthlyPmtsTotals() {
@@ -92,6 +98,63 @@ window.HomeCostCalculator = (function($) {
 		$('#maxLoanAmt').text(_formatAsCurrency(maxLoan));
 	}
 
+	function initializeTableGenerator() {
+		$('form#table_form input#genTable').on('click', buildTable);
+	}
+
+	function buildTable() {
+		var template = $('#table_template').text();
+		var form = $('form#table_form').serialize(true);
+		var monthlyIncome, monthlyDebt, debt2Income, rate, nper, pmtStart, pmtEnd, pmtStep;
+		switch(form.incomePer) {
+			case 'year':
+				monthlyIncome = _cleanNumber(form.income) / 12;
+			break;
+			case 'month':
+				monthlyIncome = _cleanNumber(form.income);
+			break;
+			case 'week':
+				monthlyIncome = _cleanNumber(form.income) * 4;
+			break;
+			default:
+			return;
+		}
+		if(isNaN(monthlyIncome))
+			return;
+		monthlyDebt = _cleanNumber(form.debt);
+		if(isNaN(monthlyDebt))
+			return;
+		debt2Income = _cleanNumber(form.d2i);
+		if(isNaN(debt2Income))
+			return;
+		rate = _cleanNumber(form.estapr) / 12 / 100;
+		if(isNaN(rate))
+			return;
+		nper = form.loanTerm * 12;
+		pmtStart = _cleanNumber(form.pmtStart);
+		pmtEnd = _cleanNumber(form.pmtStop);
+		pmtStep = _cleanNumber(form.pmtStep);
+		for(var i = pmtStart; i >= pmtEnd; i -= pmtStep) {
+			var loan = ((Math.pow((1 + rate), nper) - 1) * i) / (rate * Math.pow((rate + 1), nper)),
+				down = (loan * 0.2) / 0.8,
+				homeprice = loan + down,
+				taxes = calculateTax(homeprice, form.community),
+				utils = HomeCostCalculatorData.getEstUtilTotal();
+			var obj = {
+				payment: _formatAsCurrency(i),
+				loanamt: _formatAsCurrency(loan),
+				down: _formatAsCurrency(down),
+				homeprice: _formatAsCurrency(homeprice),
+				tax: _formatAsCurrency(taxes),
+				util: _formatAsCurrency(utils),
+				totalmonthly: _formatAsCurrency(i + utils + (taxes / 12))
+			};
+			$("table#table_display").append(Mustache.render(template, obj));
+		}
+		$('form#table_form').hide();
+		$("table#table_display").show();
+	}
+
 	function initializeSettings() {
 		var utils = HomeCostCalculatorData.getEstUtils();
 		var template = $("#util_template").text();
@@ -134,7 +197,7 @@ window.HomeCostCalculator = (function($) {
 	function calculateTax(homePrice, community) {
 		var info = HomeCostCalculatorData.getTaxInfoFor(community);
 		if(!!info)
-			return ((homePrice - (homePrice % _cleanNumber(info.per))) * (_cleanNumber(info.valuation)/100)) * _cleanNumber(info.rate);
+			return ((homePrice - (homePrice % _cleanNumber(info.per))) * (_cleanNumber(info.valuation)/100)) * _cleanNumber(info.equalizer) * (_cleanNumber(info.rate)/100);
 		else
 			return NaN;
 	}
@@ -228,7 +291,8 @@ window.HomeCostCalculatorData = (function($) {
 			county: arr[1],
 			per: arr[2],
 			valuation: arr[3],
-			rate: arr[4]
+			rate: arr[4],
+			equalizer: arr[5]
 		}
 	}
 
