@@ -133,6 +133,11 @@ window.HomeCostCalculator = (function($) {
 		nper = form.loanTerm * 12;
 		pmtStart = _cleanNumber(form.pmtStart);
 		pmtEnd = _cleanNumber(form.pmtStop);
+		if(pmtStart < pmtEnd) {
+			var tmp = pmtStart;
+			pmtStart = pmtEnd;
+			pmtEnd = tmp;
+		}
 		pmtStep = _cleanNumber(form.pmtStep);
 		for(var i = pmtStart; i >= pmtEnd; i -= pmtStep) {
 			var loan = ((Math.pow((1 + rate), nper) - 1) * i) / (rate * Math.pow((rate + 1), nper)),
